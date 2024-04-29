@@ -40,10 +40,37 @@
             "dependsOn": ["Create bin"],
         },
         {
+            "type": "shell",
+            "label": "CUDA: BUILD (optimized)",
+            "command": "nvcc",
+            "args": [
+                "-ccbin",
+                "g++",
+                "-m64",
+                "-gencode",
+                "arch=compute_75,code=sm_75",
+                "${fileBasenameNoExtension}.cu",
+                "-ICommon",
+                "-O3",
+                "--generate-line-info",
+                "-o",
+                "bin/${fileBasenameNoExtension}_optimized"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": ["$gcc"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["Create bin"],
+        },
+        {
             "label": "CUDA: RUN",
-            "command": "./bin/${fileBasenameNoExtension}",
+            "command": "./bin/${fileBasenameNoExtension}_optimized",
             "dependsOn": [
-                "CUDA: BUILD"
+                "CUDA: BUILD (optimized)"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -64,7 +91,7 @@
                 "cuda",
                 "--stats",
                 "true",
-                "bin/${fileBasenameNoExtension}"
+                "bin/${fileBasenameNoExtension}_optimized"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -109,7 +136,7 @@
                 "SourceCounters",
                 "--target-processes",
                 "all",
-                "bin/${fileBasenameNoExtension}"
+                "bin/${fileBasenameNoExtension}_optimized"
             ],
             "options": {
                 "cwd": "${fileDirname}"
