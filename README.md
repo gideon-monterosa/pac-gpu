@@ -24,6 +24,12 @@ Welcome to the official GitHub repository containing all the examples and exerci
     wget https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run
     sudo sh cuda_12.4.1_550.54.15_linux.run
     ```
+    Enable performance counters for debugging. Create a new file and add the line:
+    ```sh
+    sudo vi /etc/modprobe.d/nvidia.conf
+    
+    options nvidia NVreg_RestrictProfilingToAdminUsers=0
+    ```
     As noted in the CUDA installation output, make sure PATH and LD_LIBRARY_PATH are extended with CUDA.
     Update /etc/environment and restart the VM and **ALL** your VS Code instances:
     ```sh
