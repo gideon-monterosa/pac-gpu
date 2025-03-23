@@ -14,7 +14,7 @@ Welcome to the official GitHub repository containing all the examples and exerci
 
 2. **Install Plugins**: Install "Azure Virtual Machines" and "Remote Development" Plugin inside your VS Code.
 
-3. **Access to your GPU VM**: Login with your students mail account in the Azure plugin. Start your virtual machine there. Make a remote connection to the public IP of your server inside the Remote Dev plugin. The SSH key can be downloaded in MS teams.
+3. **Access to your GPU VM**: Login with your students mail account in the Azure plugin. Start your virtual machine there. Make a remote connection to the public IP of your server inside the Remote Dev plugin. The SSH key can be downloaded in MS teams. Make sure the file permissions of the SSH keys are read-only for your user (400 in Linux).
     ```sh
     ssh -i id_rsa_pac azureuser@xxx.xxx.xxx.xxx
     ```
@@ -24,10 +24,21 @@ Welcome to the official GitHub repository containing all the examples and exerci
     wget https://developer.download.nvidia.com/compute/cuda/12.4.1/local_installers/cuda_12.4.1_550.54.15_linux.run
     sudo sh cuda_12.4.1_550.54.15_linux.run
     ```
+    As noted in the CUDA installation output, make sure PATH and LD_LIBRARY_PATH are extended with CUDA.
+    Update /etc/environment and restart the VM and **ALL** your VS Code instances:
+    ```sh
+    PATH="/usr/local/cuda-12.4/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+    LD_LIBRARY_PATH="/usr/local/cuda-12.4/lib64"
+    ```
+    Lower the Linux paranoid level to be able to do profiling:
+    ```sh
+    sudo sysctl kernel.perf_event_paranoid=0
+    ```
 
 5. **Install nsight VS code plugin**: Install on the remote VS code instance the "Nsight" plugin from Nvidia. This enables GPU debugging inside VS Code.
 
 6. **Install Nsight profiling Tools**: Install [Nsight Systems](https://developer.nvidia.com/nsight-systems/get-started) and [Nsight Compute](https://developer.nvidia.com/tools-overview/nsight-compute/get-started) locally on **your machine**. This enables you to open the profiling files generated on the GPU enabled remote system.
+
 
 ## Getting Started
 
