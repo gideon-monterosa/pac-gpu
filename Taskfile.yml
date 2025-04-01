@@ -1,0 +1,88 @@
+version: '3'
+
+vars:
+  CUDA_FILE:
+    sh: find {{.USER_WORKING_DIR}} -type f -name "*.cu" | head -n 1 | xargs basename | sed 's/\.cu$//'
+
+tasks:
+  default:
+    cmds:
+      - task: run
+
+  create-bin:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - mkdir -p bin
+    silent: true
+
+  build:
+    desc: Build CUDA program with debug flags
+    dir: '{{.USER_WORKING_DIR}}'
+    deps: [create-bin]
+    cmds:
+      - >
+        nvcc -g -G -ccbin g++ -m64 
+        -gencode arch=compute_86,code=sm_86
+        {{.CUDA_FILE}}.cu -ICommon
+        -o bin/{{.CUDA_FILE}}
+
+  build-optimized:
+    desc: Build CUDA program with optimization flags
+    dir: '{{.USER_WORKING_DIR}}'
+    deps: [create-bin]
+    cmds:
+      - >
+        nvcc -ccbin g++ -m64 
+        -gencode arch=compute_86,code=sm_86
+        {{.CUDA_FILE}}.cu -ICommon -O3 
+        --generate-line-info
+        -o bin/{{.CUDA_FILE}}_optimized
+
+  run:
+    desc: Run the optimized CUDA program
+    dir: '{{.USER_WORKING_DIR}}'
+    deps: [build-optimized]
+    cmds:
+      - ./bin/{{.CUDA_FILE}}_optimized
+
+  profile-nsys:
+    desc: Profile CUDA program using Nsight Systems
+    dir: '{{.USER_WORKING_DIR}}'
+    deps: [build-optimized]
+    cmds:
+      - >
+        nsys profile -f true -o {{.CUDA_FILE}} -t cuda 
+        --stats true bin/{{.CUDA_FILE}}_optimized
+
+  profile-ncu:
+    desc: Profile CUDA program using Nsight Compute
+    dir: '{{.USER_WORKING_DIR}}'
+    deps: [build-optimized]
+    cmds:
+      - >
+        ncu -f -o {{.CUDA_FILE}} --print-summary per-kernel
+        --section ComputeWorkloadAnalysis
+        --section InstructionStats
+        --section LaunchStats
+        --section MemoryWorkloadAnalysis
+        --section MemoryWorkloadAnalysis_Chart
+        --section MemoryWorkloadAnalysis_Tables
+        --section Occupancy
+        --section SchedulerStats
+        --section SpeedOfLight
+        --section SpeedOfLight_HierarchicalSingleRooflineChart
+        --section SpeedOfLight_RooflineChart
+        --section WarpStateStats
+        --section SourceCounters
+        --target-processes all
+        bin/{{.CUDA_FILE}}_optimized
+
+  # Example tasks from your documentation
+  from-home:
+    cmds:
+      - pwd
+
+  from-working-directory:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - pwd
